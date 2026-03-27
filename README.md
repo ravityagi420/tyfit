@@ -1,2 +1,0 @@
-# tyfit
-tyfit.de website
