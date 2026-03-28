@@ -8,7 +8,7 @@ async function googleLogin() {
 await supabaseClient.auth.signInWithOAuth({
 provider: "google",
 options: {
-redirectTo: "https://tyfit.de/index.html"
+redirectTo: "/index.html"
 }
 });
 }
@@ -55,21 +55,29 @@ window.location.href = "index.html";
 
 // 👤 Show user on index page
 async function showUser() {
-const { data: { user } } = await supabaseClient.auth.getUser();
+  const { data: { user } } = await supabaseClient.auth.getUser();
 
-if (user) {
-const name =
-user.user_metadata.full_name ||
-user.email;
+  if (user) {
+    // Get display name from metadata, fallback to email
+    let name = "User";
+    
+    if (user.user_metadata && user.user_metadata.full_name) {
+      name = user.user_metadata.full_name;
+    } else if (user.user_metadata && user.user_metadata.name) {
+      // Google often stores name here
+      name = user.user_metadata.name;
+    } else if (user.email) {
+      name = user.email.split("@")[0]; // fallback: first part of email
+    }
 
-```
-const el = document.getElementById("welcomeText");
-if (el) {
-  el.innerText = "Welcome " + name;
-}
-```
-
-}
+    const el = document.getElementById("welcomeText");
+    if (el) {
+      el.innerText = "Welcome " + name;
+    }
+  } else {
+    // User not logged in → redirect
+    window.location.href = "login.html";
+  }
 }
 
 // 🚪 Logout
