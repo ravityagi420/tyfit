@@ -53,11 +53,21 @@ window.location.href = "index.html";
 }
 }
 
+supabaseClient.auth.onAuthStateChange((event, session) => {
+  if (event === 'SIGNED_IN' && session) {
+    // user just signed in, update welcome text
+    showUser();
+  }
+});
+
 // 👤 Show user on index page
 async function showUser() {
-  const { data: { user } } = await supabaseClient.auth.getUser();
+  // Get session first
+  const { data: { session } } = await supabaseClient.auth.getSession();
 
-  if (user) {
+  if (session && session.user) {
+    const user = session.user;
+
     // Get display name from metadata, fallback to email
     let name = "User";
     
@@ -74,8 +84,9 @@ async function showUser() {
     if (el) {
       el.innerText = "Welcome " + name;
     }
+
   } else {
-    // User not logged in → redirect
+    // No session → redirect to login
     window.location.href = "login.html";
   }
 }
