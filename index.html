@@ -23,9 +23,10 @@
 
         <!-- Template Stylesheet -->
         <link href="css/style.css" rel="stylesheet">
+        
     </head>
 
-    <body>
+    <body onload="showUser()">
         <!-- Top Bar Start -->
         <div class="top-bar d-none d-md-block">
             <div class="container-fluid">
@@ -88,6 +89,7 @@
 
         <!-- Hero Start -->
         <div class="hero">
+            <h1 id="welcomeText">Welcome</h1>
             <div class="container-fluid">
                 <div class="row align-items-center">
                     <div class="col-sm-12 col-md-6">
@@ -785,6 +787,9 @@
         <!-- Contact Javascript File -->
         <script src="mail/jqBootstrapValidation.min.js"></script>
         <script src="mail/contact.js"></script>
+
+        <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js"></script>
+        <script src="js/login.js"></script>
 
         <!-- Template Javascript -->
         <script src="js/main.js"></script>
