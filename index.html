@@ -73,7 +73,7 @@
                         <a href="price.html" class="nav-item nav-link">Price</a>
                         <a href="class.html" class="nav-item nav-link">Class</a>
                         <a href="team.html" class="nav-item nav-link">Trainer</a>
-                        <a href="portfolio.html" class="nav-item nav-link">Pose</a>
+                        <a href="admin/index.html" class="nav-item nav-link">Admin Portal</a>
                         <div class="nav-item dropdown">
                             <a href="#" class="nav-link dropdown-toggle" data-toggle="dropdown">Blog</a>
                             <div class="dropdown-menu">
@@ -82,10 +82,8 @@
                             </div>
                         </div>
                         <a href="contact.html" class="nav-item nav-link">Contact</a>
-                        <a href="login.html" id="loginBtn" class="nav-item nav-link">Login</a>
-                        <a href="#" id="logoutBtn" class="nav-item nav-link" onclick="logout(); return false;" style="display:none;">
-                        Logout
-                        </a>
+                        <a href="/login.html?returnTo=/index.html" id="loginBtn" class="nav-item nav-link">Login</a>
+                        <a href="#" id="logoutBtn" class="nav-item nav-link" style="display:none;">Logout</a>
                     </div>
                 </div>
             </div>
@@ -98,6 +96,7 @@
                 <div class="row align-items-center">
                     <div class="col-sm-12 col-md-6">
                         <div class="hero-text">
+                            <h2 id="welcomeText"></h2>
                             <h1>Transform Your Body with a Plan That Fits</h1>
                             <p>
                                 No generic plans. No guesswork. Just a strategy built for you — your body, your lifestyle, and your goals.
@@ -792,7 +791,8 @@
         <script src="mail/jqBootstrapValidation.min.js"></script>
         <script src="mail/contact.js"></script>
 
-        <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js"></script>
+        <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+        <script src="js/supabase-client.js"></script>
         <script src="js/login.js"></script>
 
         <!-- Template Javascript -->
