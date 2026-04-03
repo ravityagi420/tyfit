@@ -5,12 +5,16 @@ const supabaseClient = supabase.createClient(
 
 // 🔐 Google Login
 async function googleLogin() {
-await supabaseClient.auth.signInWithOAuth({
-provider: "google",
-options: {
-redirectTo: "/index.html"
-}
-});
+  const { error } = await supabaseClient.auth.signInWithOAuth({
+    provider: "google",
+    options: {
+      redirectTo: window.location.origin + "/index.html"
+    }
+  });
+
+  if (error) {
+    alert(error.message);
+  }
 }
 
 // 🔐 Email Signup
@@ -49,50 +53,122 @@ password
 if (error) {
 alert(error.message);
 } else {
-window.location.href = "index.html";
+window.location.href = window.location.origin + "/index.html";
 }
 }
 
-supabaseClient.auth.onAuthStateChange((event, session) => {
-  if (event === 'SIGNED_IN' && session) {
-    // user just signed in, update welcome text
-    showUser();
+supabaseClient.auth.onAuthStateChange(async (event, session) => {
+  if (event === "SIGNED_IN" && session) {
+    await ensureProfile(session);
+    await showUser();
+    toggleAuthButtons(true);
+  }
+
+  if (event === "SIGNED_OUT") {
+    toggleAuthButtons(false);
+    const el = document.getElementById("welcomeText");
+    if (el) el.innerText = "Welcome Guest";
+  }
+});
+
+// store data in profiles table after login/signup
+async function ensureProfile(session) {
+  if (!session || !session.user) return;
+
+  const user = session.user;
+  const meta = user.user_metadata || {};
+
+  const fullName =
+    meta.full_name ||
+    meta.name ||
+    "";
+
+  let firstName = meta.given_name || "";
+  let lastName = meta.family_name || "";
+
+  if (!firstName && !lastName && fullName) {
+    const parts = fullName.trim().split(" ");
+    firstName = parts[0] || "";
+    lastName = parts.slice(1).join(" ") || "";
+  }
+
+  const provider =
+    user.app_metadata?.provider || "email";
+
+  const profilePayload = {
+    id: user.id,
+    email: user.email,
+    first_name: firstName,
+    last_name: lastName,
+    full_name: fullName || [firstName, lastName].filter(Boolean).join(" "),
+    auth_provider: provider,
+    updated_at: new Date().toISOString()
+  };
+
+  const { error } = await supabaseClient
+    .from("profiles")
+    .upsert(profilePayload, { onConflict: "id" });
+
+  if (error) {
+    console.error("Profile upsert failed:", error.message);
+  }
+}
+
+window.addEventListener("DOMContentLoaded", async () => {
+  const { data: { session } } = await supabaseClient.auth.getSession();
+
+  if (session) {
+    await ensureProfile(session);
+    await showUser();
+    toggleAuthButtons(true);
+  } else {
+    toggleAuthButtons(false);
   }
 });
 
 // 👤 Show user on index page
 async function showUser() {
-  // Get session first
   const { data: { session } } = await supabaseClient.auth.getSession();
+  const el = document.getElementById("welcomeText");
+
+  if (!el) return;
 
   if (session && session.user) {
     const user = session.user;
+    const meta = user.user_metadata || {};
 
-    // Get display name from metadata, fallback to email
     let name = "User";
-    
-    if (user.user_metadata && user.user_metadata.full_name) {
-      name = user.user_metadata.full_name;
-    } else if (user.user_metadata && user.user_metadata.name) {
-      // Google often stores name here
-      name = user.user_metadata.name;
+
+    if (meta.full_name) {
+      name = meta.full_name;
+    } else if (meta.name) {
+      name = meta.name;
     } else if (user.email) {
-      name = user.email.split("@")[0]; // fallback: first part of email
+      name = user.email.split("@")[0];
     }
 
-    const el = document.getElementById("welcomeText");
-    if (el) {
-      el.innerText = "Welcome " + name;
-    }
-
+    el.innerText = "Welcome " + name;
   } else {
-    // No session → redirect to login
-    window.location.href = "login.html";
+    el.innerText = "Welcome Guest";
   }
+}
+
+function toggleAuthButtons(isLoggedIn) {
+  const loginBtn = document.getElementById("loginBtn");
+  const logoutBtn = document.getElementById("logoutBtn");
+
+  if (loginBtn) loginBtn.style.display = isLoggedIn ? "none" : "inline-block";
+  if (logoutBtn) logoutBtn.style.display = isLoggedIn ? "inline-block" : "none";
 }
 
 // 🚪 Logout
 async function logout() {
-await supabaseClient.auth.signOut();
-window.location.href = "login.html";
+  const { error } = await supabaseClient.auth.signOut();
+
+  if (error) {
+    alert(error.message);
+    return;
+  }
+
+  window.location.href = "login.html";
 }
